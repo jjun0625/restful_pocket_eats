@@ -1,18 +1,32 @@
-import { Column } from 'typeorm';
+import { CoreEntity } from './../common/common.entities';
+import {
+  BeforeInsert,
+  BeforeUpdate,
+  Column,
+  Entity,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
+import * as bcrypt from 'bcrypt';
 import { IsEnum } from 'class-validator';
+import { InternalServerErrorException } from '@nestjs/common';
 
-enum UserRole {
+export enum UserRole {
   client,
   owner,
   delivery,
 }
 
-export class User {
-  @Column()
+@Entity({
+  name: 'user',
+})
+export class User extends CoreEntity {
+  @Column({
+    unique: true,
+  })
   email: string;
 
   @Column()
-  passoword: string;
+  password: string;
 
   @Column({ type: 'enum', enum: UserRole })
   @IsEnum(UserRole)
@@ -20,4 +34,14 @@ export class User {
 
   @Column({ default: false })
   verified: boolean;
+
+  @BeforeInsert()
+  async hassPassword(): Promise<void> {
+    try {
+      this.password = await bcrypt.hash(this.password.toString(), 10);
+    } catch (e) {
+      console.error(e);
+      throw new InternalServerErrorException();
+    }
+  }
 }
