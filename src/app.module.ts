@@ -5,6 +5,7 @@ import { CommonModule } from './common/common.module';
 import * as Joi from 'joi';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from './users/user.entitiy';
+import { JwtModule } from './jwt/jwt.module';
 
 @Module({
   imports: [
@@ -29,10 +30,14 @@ import { User } from './users/user.entitiy';
         DB_USERNAME: Joi.string().required(),
         DB_PASSWORD: Joi.string().required(),
         DB_NAME: Joi.string().required(),
+        PRIVATE_KEY: Joi.string().required(),
       }),
     }),
     UsersModule,
     CommonModule,
+    JwtModule.forRoot({
+      privateKey: process.env.PRIVATE_KEY,
+    }),
   ],
   controllers: [],
   providers: [],

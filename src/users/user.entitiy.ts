@@ -36,11 +36,22 @@ export class User extends CoreEntity {
   verified: boolean;
 
   @BeforeInsert()
+  @BeforeUpdate()
   async hassPassword(): Promise<void> {
     try {
       this.password = await bcrypt.hash(this.password.toString(), 10);
     } catch (e) {
       console.error(e);
+      throw new InternalServerErrorException();
+    }
+  }
+
+  async checkPassword(password: string): Promise<boolean> {
+    try {
+      const ok = await bcrypt.compare(password, this.password);
+      return ok;
+    } catch (error) {
+      console.log(error);
       throw new InternalServerErrorException();
     }
   }
